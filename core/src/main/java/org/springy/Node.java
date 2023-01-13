@@ -1,10 +1,10 @@
 package org.springy;
 
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
+import space.earlygrey.shapedrawer.ShapeDrawer;
 
 public class Node {
   static final float RADIUS = 0.1f;
@@ -39,7 +39,7 @@ public class Node {
     sprite.setCenter(position.x, position.y);
   }
 
-  public void draw(Batch batch) {
-    sprite.draw(batch);
+  public void draw(ShapeDrawer shapeDrawer) {
+    shapeDrawer.filledCircle(position.x, position.y, RADIUS);
   }
 }

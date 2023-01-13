@@ -38,10 +38,10 @@ public class MainScreen extends ScreenAdapter {
 
   @Override
   public void show() {
-    camera = new OrthographicCamera(1280, 720);
+    camera = new OrthographicCamera(Game.WIDTH, Game.HEIGHT);
     camera.position.set(camera.viewportWidth/2f, camera.viewportHeight/2f, 0);
     camera.update();
-    viewport = new ExtendViewport(1280, 720, camera);
+    viewport = new ExtendViewport(Game.WIDTH, Game.HEIGHT, camera);
     batch = new PolygonSpriteBatch();
 
     Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
@@ -51,15 +51,15 @@ public class MainScreen extends ScreenAdapter {
     pixmap.dispose();
     TextureRegion region = new TextureRegion(texture, 0, 0, 1, 1);
     shapeDrawer = new ShapeDrawer(batch, region);
-    shapeDrawer.setDefaultLineWidth(4);
+    shapeDrawer.setDefaultLineWidth(0.05f);
 
     Texture bgTexture = new Texture(Gdx.files.internal("bluegrid.png"), true);
     bgTexture.setFilter(Texture.TextureFilter.MipMapNearestLinear, Texture.TextureFilter.MipMapNearestLinear);
     bgTexture.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
 
-    background = new Sprite(bgTexture, 2*20*64, (int)(2*11.25*64)); // 20x 11,25
+    background = new Sprite(bgTexture, 2*20*64, (int)(2*11.25*64)); // 20x11,25
     background.setOrigin(0, 0);
-    background.setScale(0.5f);
+    background.setScale(0.00625f);
 
     logo = new Sprite(new Texture("logo.png"));
     logo.setOriginCenter();
@@ -93,10 +93,10 @@ public class MainScreen extends ScreenAdapter {
   }
 
   private void handleInput() {
-    if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) camera.translate(3, 0);
-    if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) camera.translate(-3, 0);
-    if (Gdx.input.isKeyPressed(Input.Keys.UP)) camera.translate(0, 3);
-    if (Gdx.input.isKeyPressed(Input.Keys.DOWN)) camera.translate(0, -3);
+    if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) camera.translate(0.01f, 0);
+    if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) camera.translate(-0.01f, 0);
+    if (Gdx.input.isKeyPressed(Input.Keys.UP)) camera.translate(0, 0.01f);
+    if (Gdx.input.isKeyPressed(Input.Keys.DOWN)) camera.translate(0, -0.01f);
 
     if (Gdx.input.isKeyPressed(Input.Keys.Q)) camera.zoom -= 0.01;
     if (Gdx.input.isKeyPressed(Input.Keys.A)) camera.zoom += 0.01;
@@ -104,6 +104,7 @@ public class MainScreen extends ScreenAdapter {
     if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT) && Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
       var c = camera.unproject(new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0));
       nodes.add(new Node(world, new Vector2(c.x, c.y)));
+      System.out.println(c.x + " " + c.y);
     }
 
     if (Gdx.input.isKeyJustPressed(Input.Keys.CONTROL_LEFT)) {
@@ -149,7 +150,7 @@ public class MainScreen extends ScreenAdapter {
     batch.begin();
     background.draw(batch);
     for (Spring spring: springs) spring.draw(shapeDrawer);
-    for (Node node: nodes) node.draw(batch);
+    for (Node node: nodes) node.draw(shapeDrawer);
     batch.end();
 
     stage.getViewport().apply();
@@ -159,7 +160,7 @@ public class MainScreen extends ScreenAdapter {
   private Node findNode(float x, float y) {
     Vector2 v = new Vector2(x, y);
     for (Node n: nodes) {
-      if (v.dst2(n.position) < (Node.RADIUS_SQUARED*1000)) return n;
+      if (v.dst2(n.position) < (Node.RADIUS_SQUARED*1)) return n;
     }
     return null;
   }
