@@ -39,7 +39,7 @@ public class MainScreen extends ScreenAdapter {
   private List<Node> nodes = new ArrayList<>();
   private List<Spring> springs = new ArrayList<>();
   private boolean isRunning = false;
-  private Node lastNode;
+  private Node lastNode, selectedNode;
 
   @Override
   public void show() {
@@ -112,11 +112,42 @@ public class MainScreen extends ScreenAdapter {
     if (Gdx.input.isKeyPressed(Input.Keys.Q)) camera.zoom -= 0.01;
     if (Gdx.input.isKeyPressed(Input.Keys.A)) camera.zoom += 0.01;
 
+    // Move Node
+    if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {
+      var c = camera.unproject(new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0));
+      selectedNode = findNode(c.x, c.y);
+    }
+    if (!Gdx.input.isButtonPressed(Input.Buttons.LEFT)) {
+      selectedNode = null;
+    } else if (selectedNode != null && !Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT)) {
+      var c = camera.unproject(new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0));
+      selectedNode.setPosition(c.x, c.y);
+    }
+
     // Create node
     if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT) && Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
       var c = camera.unproject(new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0));
       nodes.add(new Node(world, new Vector2(c.x, c.y)));
       System.out.println(c.x + " " + c.y);
+    }
+
+    // Create Spring
+    if (Gdx.input.isKeyJustPressed(Input.Keys.CONTROL_LEFT)) {
+      System.out.println("reset");
+      lastNode = null;
+    }
+    if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT) && Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT)) {
+      var c = camera.unproject(new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0));
+      var node = findNode(c.x, c.y);
+      System.out.println("node " + node);
+      if (node != null) {
+        if (lastNode == null) {
+          lastNode = node;
+        } else {
+          springs.add(new Spring(world, lastNode, node));
+          lastNode = node;
+        }
+      }
     }
 
     // Delete Node or Spring
@@ -139,25 +170,6 @@ public class MainScreen extends ScreenAdapter {
         if (spring != null) {
           springs.remove(spring);
           spring.dispose();
-        }
-      }
-    }
-
-    // Create Spring
-    if (Gdx.input.isKeyJustPressed(Input.Keys.CONTROL_LEFT)) {
-      System.out.println("reset");
-      lastNode = null;
-    }
-    if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT) && Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT)) {
-      var c = camera.unproject(new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0));
-      var node = findNode(c.x, c.y);
-      System.out.println("node " + node);
-      if (node != null) {
-        if (lastNode == null) {
-          lastNode = node;
-        } else {
-          springs.add(new Spring(world, lastNode, node));
-          lastNode = node;
         }
       }
     }

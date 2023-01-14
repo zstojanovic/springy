@@ -33,6 +33,11 @@ public class Node {
     shape.dispose();
   }
 
+  public void setPosition(float x, float y) {
+    position.set(x, y);
+    body.setTransform(position, 0);
+  }
+
   public void draw(ShapeDrawer shapeDrawer) {
     shapeDrawer.filledCircle(body.getPosition(), RADIUS);
   }
