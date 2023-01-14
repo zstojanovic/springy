@@ -10,14 +10,13 @@ public class Node {
   static final float RADIUS = 0.1f;
   static final float RADIUS_SQUARED = RADIUS * RADIUS;
 
+  World world;
   Body body;
   Vector2 position;
-//  float x;
-//  float y;
   float density;
-  Sprite sprite;
 
   public Node(World world, Vector2 position) {
+    this.world = world;
     this.position = position;
     BodyDef bodyDef = new BodyDef();
     bodyDef.type = BodyDef.BodyType.DynamicBody;
@@ -32,14 +31,14 @@ public class Node {
     body.createFixture(fixtureDef);
     density = fixtureDef.density; // TODO is this needed?
     shape.dispose();
-
-    sprite = new Sprite(new Texture("node.png"));
-    sprite.setScale(0.5f);
-    sprite.setOriginCenter();
-    sprite.setCenter(position.x, position.y);
   }
 
   public void draw(ShapeDrawer shapeDrawer) {
     shapeDrawer.filledCircle(body.getPosition(), RADIUS);
+  }
+
+  public void dispose() {
+    world.destroyBody(body); // TODO other box2d objects too
+    world = null;
   }
 }

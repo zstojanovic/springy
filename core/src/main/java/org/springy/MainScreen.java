@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.PolygonSpriteBatch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.*;
@@ -55,7 +56,6 @@ public class MainScreen extends ScreenAdapter {
     pixmap.dispose();
     TextureRegion region = new TextureRegion(texture, 0, 0, 1, 1);
     shapeDrawer = new ShapeDrawer(batch, region);
-    shapeDrawer.setDefaultLineWidth(0.05f);
 
     Texture bgTexture = new Texture(Gdx.files.internal("bluegrid.png"), true);
     bgTexture.setFilter(Texture.TextureFilter.MipMapNearestLinear, Texture.TextureFilter.MipMapNearestLinear);
@@ -112,12 +112,38 @@ public class MainScreen extends ScreenAdapter {
     if (Gdx.input.isKeyPressed(Input.Keys.Q)) camera.zoom -= 0.01;
     if (Gdx.input.isKeyPressed(Input.Keys.A)) camera.zoom += 0.01;
 
+    // Create node
     if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT) && Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
       var c = camera.unproject(new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0));
       nodes.add(new Node(world, new Vector2(c.x, c.y)));
       System.out.println(c.x + " " + c.y);
     }
 
+    // Delete Node or Spring
+    if (Gdx.input.isButtonJustPressed(Input.Buttons.RIGHT)) {
+      var c = camera.unproject(new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0));
+      var node = findNode(c.x, c.y);
+      if (node != null) {
+        var i = springs.iterator();
+        while (i.hasNext()) {
+          var s = i.next();
+          if (s.a == node || s.b == node) {
+            i.remove();
+            s.dispose();
+          }
+        }
+        nodes.remove(node);
+        node.dispose();
+      } else {
+        var spring = findSpring(c.x, c.y);
+        if (spring != null) {
+          springs.remove(spring);
+          spring.dispose();
+        }
+      }
+    }
+
+    // Create Spring
     if (Gdx.input.isKeyJustPressed(Input.Keys.CONTROL_LEFT)) {
       System.out.println("reset");
       lastNode = null;
@@ -175,6 +201,20 @@ public class MainScreen extends ScreenAdapter {
       if (v.dst2(n.position) < (Node.RADIUS_SQUARED*1)) return n;
     }
     return null;
+  }
+
+  private Spring findSpring(float x, float y) {
+    Vector2 point = new Vector2(x, y);
+    Spring found = null;
+    float foundDistance = Float.MAX_VALUE;
+    for (Spring s: springs) {
+      var d = Intersector.distanceSegmentPoint(s.a.position, s.b.position, point);
+      if (d < Spring.WIDTH && d < foundDistance) {
+        found = s;
+        foundDistance = d;
+      }
+    }
+    return found;
   }
 
   @Override

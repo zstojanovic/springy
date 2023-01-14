@@ -23,6 +23,7 @@ public class Bounds {
   }
 
   public void draw(ShapeDrawer shapeDrawer) {
+    shapeDrawer.setDefaultLineWidth(0.05f);
     shapeDrawer.path(vertices, true);
   }
 }
