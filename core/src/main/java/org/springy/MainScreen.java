@@ -1,8 +1,6 @@
 package org.springy;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
-import com.badlogic.gdx.ScreenAdapter;
+import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.PolygonSpriteBatch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
@@ -40,6 +38,7 @@ public class MainScreen extends ScreenAdapter {
   private List<Spring> springs = new ArrayList<>();
   private boolean isRunning = false;
   private Node lastNode, selectedNode;
+  private Vector3 lastPanPoint;
 
   @Override
   public void show() {
@@ -64,10 +63,6 @@ public class MainScreen extends ScreenAdapter {
     background = new Sprite(bgTexture, 2*20*64, (int)(2*11.25*64)); // 20x11,25
     background.setOrigin(0, 0);
     background.setScale(0.00625f);
-
-    logo = new Sprite(new Texture("logo.png"));
-    logo.setOriginCenter();
-    logo.setCenter(0, 0);
 
     createUI();
   }
@@ -101,16 +96,37 @@ public class MainScreen extends ScreenAdapter {
     Slider slider = new Slider(0.0f, 100.0f, 10.0f, false, skin, "default-horizontal");
     table.add(slider).space(8.0f);
     stage.addActor(table);
+
+    var mux = new InputMultiplexer();
+    mux.addProcessor(stage);
+    mux.addProcessor(new InputAdapter() {
+      @Override
+      public boolean scrolled(float amountX, float amountY) {
+        var zoom = camera.zoom * (1 + amountY/20f);
+        if (zoom < 0.2) zoom = 0.2f;
+        if (zoom > 5) zoom = 5;
+        camera.zoom = zoom;
+        return super.scrolled(amountX, amountY);
+      }
+    });
+    Gdx.input.setInputProcessor(mux);
   }
 
   private void handleInput() {
-    if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) camera.translate(0.01f, 0);
-    if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) camera.translate(-0.01f, 0);
-    if (Gdx.input.isKeyPressed(Input.Keys.UP)) camera.translate(0, 0.01f);
-    if (Gdx.input.isKeyPressed(Input.Keys.DOWN)) camera.translate(0, -0.01f);
-
-    if (Gdx.input.isKeyPressed(Input.Keys.Q)) camera.zoom -= 0.01;
-    if (Gdx.input.isKeyPressed(Input.Keys.A)) camera.zoom += 0.01;
+    // Pan
+    if (Gdx.input.isButtonJustPressed(Input.Buttons.RIGHT)) {
+      lastPanPoint = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
+    }
+    if (!Gdx.input.isButtonPressed(Input.Buttons.RIGHT)) {
+      lastPanPoint = null;
+    } else if (lastPanPoint != null) {
+      var panPoint = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
+      var pan = camera.unproject(new Vector3(lastPanPoint)).sub(camera.unproject(new Vector3(panPoint)));
+      if (!pan.isZero()) {
+        camera.translate(pan);
+      }
+      lastPanPoint.set(panPoint);
+    }
 
     // Move Node
     if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {
