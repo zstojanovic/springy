@@ -27,6 +27,6 @@ public class Spring {
   }
 
   public void draw(ShapeDrawer shapeDrawer) {
-    shapeDrawer.line(a.position, b.position);
+    shapeDrawer.line(a.body.getPosition(), b.body.getPosition());
   }
 }

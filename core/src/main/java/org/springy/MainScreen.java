@@ -9,9 +9,11 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.physics.box2d.World;
+import com.badlogic.gdx.physics.box2d.*;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
@@ -31,6 +33,8 @@ public class MainScreen extends ScreenAdapter {
   private Table table;
 
   private World world = new World(new Vector2(0, -10), true);
+  private Bounds bounds = new Bounds(world, new Vector2[] {
+    new Vector2(0, 9), new Vector2(0, 0), new Vector2(16, 0), new Vector2(16, 9), });
   private List<Node> nodes = new ArrayList<>();
   private List<Spring> springs = new ArrayList<>();
   private boolean isRunning = false;
@@ -79,7 +83,14 @@ public class MainScreen extends ScreenAdapter {
     table.setPosition(10, stage.getHeight() - 160);
     table.setSize(150, 150);
 
-    TextButton textButton = new TextButton("Edit", skin);
+    TextButton textButton = new TextButton("Toggle", skin);
+    textButton.addListener(new ClickListener() {
+      @Override
+      public void clicked(InputEvent event, float x, float y) {
+        isRunning = !isRunning;
+        super.clicked(event, x, y);
+      }
+    });
     table.add(textButton).space(8.0f);
 
     table.row();
@@ -149,6 +160,7 @@ public class MainScreen extends ScreenAdapter {
 
     batch.begin();
     background.draw(batch);
+    bounds.draw(shapeDrawer);
     for (Spring spring: springs) spring.draw(shapeDrawer);
     for (Node node: nodes) node.draw(shapeDrawer);
     batch.end();

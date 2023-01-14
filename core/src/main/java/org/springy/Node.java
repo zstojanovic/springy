@@ -40,6 +40,6 @@ public class Node {
   }
 
   public void draw(ShapeDrawer shapeDrawer) {
-    shapeDrawer.filledCircle(position.x, position.y, RADIUS);
+    shapeDrawer.filledCircle(body.getPosition(), RADIUS);
   }
 }
