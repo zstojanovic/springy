@@ -1,7 +1,6 @@
 package org.springy;
 
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import space.earlygrey.shapedrawer.ShapeDrawer;
@@ -14,6 +13,7 @@ public class Node {
   Body body;
   Vector2 position;
   float density;
+  boolean selected = false;
 
   public Node(World world, Vector2 position) {
     this.world = world;
@@ -39,6 +39,7 @@ public class Node {
   }
 
   public void draw(ShapeDrawer shapeDrawer) {
+    if (selected) shapeDrawer.setColor(Color.YELLOW); else shapeDrawer.setColor(Color.WHITE);
     shapeDrawer.filledCircle(body.getPosition(), RADIUS);
   }
 

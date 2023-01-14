@@ -37,7 +37,8 @@ public class MainScreen extends ScreenAdapter {
   private List<Node> nodes = new ArrayList<>();
   private List<Spring> springs = new ArrayList<>();
   private boolean isRunning = false;
-  private Node lastNode, selectedNode;
+  private Node lastNode, movingNode, selectedNode;
+  private Spring selectedSpring;
   private Vector3 lastPanPoint;
 
   @Override
@@ -131,13 +132,25 @@ public class MainScreen extends ScreenAdapter {
     // Move Node
     if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {
       var c = camera.unproject(new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0));
-      selectedNode = findNode(c.x, c.y);
+      movingNode = findNode(c.x, c.y);
+      if (movingNode != null) {
+        if (selectedNode != null) selectedNode.selected = false;
+        selectedNode = movingNode;
+        selectedNode.selected = true;
+      } else {
+        var spring = findSpring(c.x, c.y);
+        if (spring != null) {
+          if (selectedSpring != null) selectedSpring.selected = false;
+          selectedSpring = spring;
+          selectedSpring.selected = true;
+        }
+      }
     }
     if (!Gdx.input.isButtonPressed(Input.Buttons.LEFT)) {
-      selectedNode = null;
-    } else if (selectedNode != null && !Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT)) {
+      movingNode = null;
+    } else if (movingNode != null && !Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT)) {
       var c = camera.unproject(new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0));
-      selectedNode.setPosition(c.x, c.y);
+      movingNode.setPosition(c.x, c.y);
     }
 
     // Create node

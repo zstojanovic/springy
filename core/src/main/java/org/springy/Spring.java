@@ -1,5 +1,6 @@
 package org.springy;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.physics.box2d.joints.DistanceJoint;
 import com.badlogic.gdx.physics.box2d.joints.DistanceJointDef;
@@ -15,6 +16,7 @@ public class Spring {
   float phase = 0;
   float restLength;
   Node a, b;
+  boolean selected = false;
 
   public Spring(World world, Node a, Node b) {
     //DistanceJoint joint, float amplitude, float frequency, float phase) {
@@ -31,6 +33,7 @@ public class Spring {
   }
 
   public void draw(ShapeDrawer shapeDrawer) {
+    if (selected) shapeDrawer.setColor(Color.YELLOW); else shapeDrawer.setColor(Color.WHITE);
     shapeDrawer.setDefaultLineWidth(WIDTH);
     shapeDrawer.line(a.body.getPosition(), b.body.getPosition());
   }
