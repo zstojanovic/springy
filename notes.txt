@@ -1,3 +1,7 @@
+TODO
+- beware, finding uses initial coords
+- beware, moving Nodes doesn't change rest length
+
 Node
 - create - choose location and create
 - delete - select and delete *

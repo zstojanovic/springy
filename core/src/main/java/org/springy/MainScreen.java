@@ -37,6 +37,7 @@ public class MainScreen extends ScreenAdapter {
   private List<Node> nodes = new ArrayList<>();
   private List<Spring> springs = new ArrayList<>();
   private boolean isRunning = false;
+  private float time;
   private Node lastNode, movingNode, selectedNode;
   private Spring selectedSpring;
   private Vector3 lastPanPoint;
@@ -73,17 +74,16 @@ public class MainScreen extends ScreenAdapter {
     Skin skin = new Skin(Gdx.files.internal("skin/test/uiskin.json"));
     Gdx.input.setInputProcessor(stage);
 
-    table = new Table();
-    table.setBackground(skin.getDrawable("default-pane"));
-    //table.setFillParent(true);
+    table = new Window("", skin);
+    //table.setBackground(skin.getDrawable("default-pane"));
     table.setPosition(10, stage.getHeight() - 160);
     table.setSize(150, 150);
 
-    TextButton textButton = new TextButton("Toggle", skin);
+    TextButton textButton = new TextButton("Start", skin);
     textButton.addListener(new ClickListener() {
       @Override
       public void clicked(InputEvent event, float x, float y) {
-        isRunning = !isRunning;
+        isRunning = true;
         super.clicked(event, x, y);
       }
     });
@@ -173,7 +173,7 @@ public class MainScreen extends ScreenAdapter {
         if (lastNode == null) {
           lastNode = node;
         } else {
-          springs.add(new Spring(world, lastNode, node));
+          springs.add(new Spring(world, lastNode, node, 0));
           lastNode = node;
         }
       }
@@ -212,14 +212,14 @@ public class MainScreen extends ScreenAdapter {
     handleInput();
 
     if (isRunning) {
-//			for (OldSpring spring: springs) {
-//				if (spring.amplitude != 0) {
-//					float length = (float)(spring.restLength + (spring.amplitude * spring.restLength) * Math.sin(time * spring.frequency * 6.28 + spring.phase));
-//					spring.joint.setLength(length);
-//				}
-//			}
+			for (Spring spring: springs) {
+				if (spring.amplitude != 0) {
+					float length = (float)(spring.restLength + (spring.amplitude * spring.restLength) * Math.sin(time * spring.frequency * 6.28 + spring.phase));
+					spring.joint.setLength(length);
+				}
+			}
       world.step(1f / 60f, 6, 2);
-      //time += 1f / 60f;
+      time += 1f / 60f;
     }
 
     camera.update();

@@ -18,7 +18,7 @@ public class Spring {
   Node a, b;
   boolean selected = false;
 
-  public Spring(World world, Node a, Node b) {
+  public Spring(World world, Node a, Node b, float amplitude) {
     //DistanceJoint joint, float amplitude, float frequency, float phase) {
     DistanceJointDef jointDef = new DistanceJointDef();
     jointDef.initialize(a.body, b.body, a.body.getWorldCenter(), b.body.getWorldCenter());
@@ -30,6 +30,7 @@ public class Spring {
     this.world = world;
     this.a = a;
     this.b = b;
+    this.amplitude = amplitude;
   }
 
   public void draw(ShapeDrawer shapeDrawer) {
