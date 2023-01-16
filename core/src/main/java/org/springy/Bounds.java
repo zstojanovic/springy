@@ -1,5 +1,6 @@
 package org.springy;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.Array;
@@ -24,6 +25,7 @@ public class Bounds {
 
   public void draw(ShapeDrawer shapeDrawer) {
     shapeDrawer.setDefaultLineWidth(0.05f);
+    shapeDrawer.setColor(Color.WHITE);
     shapeDrawer.path(vertices, true);
   }
 }

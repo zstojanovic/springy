@@ -27,8 +27,9 @@ public class MainScreen extends ScreenAdapter {
 
   private PolygonSpriteBatch batch;
   private ShapeDrawer shapeDrawer;
-  private Sprite background, logo;
+  private Sprite background;
   private Stage stage;
+  private InputHandler inputHandler = new InputHandler();
   private Table table;
 
   private World world = new World(new Vector2(0, -10), true);
@@ -38,9 +39,6 @@ public class MainScreen extends ScreenAdapter {
   private List<Spring> springs = new ArrayList<>();
   private boolean isRunning = false;
   private float time;
-  private Node lastNode, movingNode, selectedNode;
-  private Spring selectedSpring;
-  private Vector3 lastPanPoint;
 
   @Override
   public void show() {
@@ -100,107 +98,122 @@ public class MainScreen extends ScreenAdapter {
 
     var mux = new InputMultiplexer();
     mux.addProcessor(stage);
-    mux.addProcessor(new InputAdapter() {
-      @Override
-      public boolean scrolled(float amountX, float amountY) {
-        var zoom = camera.zoom * (1 + amountY/20f);
-        if (zoom < 0.2) zoom = 0.2f;
-        if (zoom > 5) zoom = 5;
-        camera.zoom = zoom;
-        return super.scrolled(amountX, amountY);
-      }
-    });
+    mux.addProcessor(inputHandler);
     Gdx.input.setInputProcessor(mux);
   }
 
-  private void handleInput() {
-    // Pan
-    if (Gdx.input.isButtonJustPressed(Input.Buttons.RIGHT)) {
-      lastPanPoint = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
-    }
-    if (!Gdx.input.isButtonPressed(Input.Buttons.RIGHT)) {
-      lastPanPoint = null;
-    } else if (lastPanPoint != null) {
-      var panPoint = new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0);
-      var pan = camera.unproject(new Vector3(lastPanPoint)).sub(camera.unproject(new Vector3(panPoint)));
-      if (!pan.isZero()) {
-        camera.translate(pan);
-      }
-      lastPanPoint.set(panPoint);
-    }
+  private Vector2 getMousePosition() {
+    var p = camera.unproject(new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0));
+    return new Vector2(p.x, p.y);
+  }
 
-    // Move Node
-    if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT)) {
-      var c = camera.unproject(new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0));
-      movingNode = findNode(c.x, c.y);
-      if (movingNode != null) {
-        if (selectedNode != null) selectedNode.selected = false;
-        selectedNode = movingNode;
-        selectedNode.selected = true;
-      } else {
-        var spring = findSpring(c.x, c.y);
-        if (spring != null) {
-          if (selectedSpring != null) selectedSpring.selected = false;
-          selectedSpring = spring;
-          selectedSpring.selected = true;
-        }
-      }
-    }
-    if (!Gdx.input.isButtonPressed(Input.Buttons.LEFT)) {
-      movingNode = null;
-    } else if (movingNode != null && !Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT)) {
-      var c = camera.unproject(new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0));
-      movingNode.setPosition(c.x, c.y);
-    }
+  class InputHandler extends InputAdapter {
+    Node lastNode, movingNode, selectedNode;
+    Spring selectedSpring;
+    Vector3 lastPanPoint;
 
-    // Create node
-    if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT) && Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
-      var c = camera.unproject(new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0));
-      nodes.add(new Node(world, new Vector2(c.x, c.y)));
-      System.out.println(c.x + " " + c.y);
-    }
-
-    // Create Spring
-    if (Gdx.input.isKeyJustPressed(Input.Keys.CONTROL_LEFT)) {
-      System.out.println("reset");
-      lastNode = null;
-    }
-    if (Gdx.input.isButtonJustPressed(Input.Buttons.LEFT) && Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT)) {
-      var c = camera.unproject(new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0));
-      var node = findNode(c.x, c.y);
-      System.out.println("node " + node);
-      if (node != null) {
-        if (lastNode == null) {
-          lastNode = node;
-        } else {
-          springs.add(new Spring(world, lastNode, node, 0));
-          lastNode = node;
-        }
-      }
-    }
-
-    // Delete Node or Spring
-    if (Gdx.input.isButtonJustPressed(Input.Buttons.RIGHT)) {
-      var c = camera.unproject(new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0));
-      var node = findNode(c.x, c.y);
-      if (node != null) {
-        var i = springs.iterator();
-        while (i.hasNext()) {
-          var s = i.next();
-          if (s.a == node || s.b == node) {
-            i.remove();
-            s.dispose();
+    @Override
+    public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+      var position = getMousePosition();
+      switch (button) {
+        case Input.Buttons.LEFT:
+          if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
+            nodes.add(new Node(world, position));
+          } else if (Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT)) {
+            var node = findNode(position);
+            if (node != null) {
+              if (lastNode == null) {
+                lastNode = node;
+              } else {
+                springs.add(new Spring(world, lastNode, node, 0));
+                lastNode = node;
+              }
+            }
           }
+          break;
+        case Input.Buttons.RIGHT:
+          var node = findNode(position);
+          if (node != null) {
+            var i = springs.iterator();
+            while (i.hasNext()) {
+              var s = i.next();
+              if (s.a == node || s.b == node) {
+                i.remove();
+                s.dispose();
+              }
+            }
+            nodes.remove(node);
+            node.dispose();
+          } else {
+            var spring = findSpring(position);
+            if (spring != null) {
+              springs.remove(spring);
+              spring.dispose();
+            }
+          }
+      }
+      return true;
+    }
+
+    @Override
+    public boolean touchDragged(int screenX, int screenY, int pointer) {
+      if (Gdx.input.isButtonPressed(Input.Buttons.RIGHT)) {
+        var panPoint = new Vector3(screenX, screenY, 0);
+        var pan = camera.unproject(new Vector3(lastPanPoint)).sub(camera.unproject(new Vector3(panPoint)));
+        if (!pan.isZero()) {
+          camera.translate(pan);
         }
-        nodes.remove(node);
-        node.dispose();
-      } else {
-        var spring = findSpring(c.x, c.y);
-        if (spring != null) {
-          springs.remove(spring);
-          spring.dispose();
+        lastPanPoint.set(panPoint);
+      } else if (Gdx.input.isButtonPressed(Input.Buttons.LEFT)) {
+        if (movingNode != null) {
+          movingNode.setPosition(getMousePosition());
         }
       }
+      return true;
+    }
+
+    @Override
+    public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+      switch (button) {
+        case Input.Buttons.RIGHT:
+          lastPanPoint = new Vector3(screenX, screenY, 0);
+          break;
+        case Input.Buttons.LEFT:
+          if (!Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT) && !Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
+            var position = getMousePosition();
+            movingNode = findNode(position);
+            if (movingNode != null) {
+              if (selectedNode != null) selectedNode.selected = false;
+              selectedNode = movingNode;
+              selectedNode.selected = true;
+            } else {
+              var spring = findSpring(position);
+              if (spring != null) {
+                if (selectedSpring != null) selectedSpring.selected = false;
+                selectedSpring = spring;
+                selectedSpring.selected = true;
+              }
+            }
+          }
+      }
+      return true;
+    }
+
+    @Override
+    public boolean keyUp(int keycode) {
+      if (keycode == Input.Keys.CONTROL_LEFT) {
+        lastNode = null;
+      }
+      return true;
+    }
+
+    @Override
+    public boolean scrolled(float amountX, float amountY) {
+      var zoom = camera.zoom * (1 + amountY/20f);
+      if (zoom < 0.2) zoom = 0.2f;
+      if (zoom > 5) zoom = 5;
+      camera.zoom = zoom;
+      return true;
     }
   }
 
@@ -208,8 +221,6 @@ public class MainScreen extends ScreenAdapter {
   public void render(float delta) {
     Gdx.gl.glClearColor(0.15f, 0.15f, 0.2f, 1f);
     Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
-    handleInput();
 
     if (isRunning) {
 			for (Spring spring: springs) {
@@ -236,16 +247,14 @@ public class MainScreen extends ScreenAdapter {
     stage.draw();
   }
 
-  private Node findNode(float x, float y) {
-    Vector2 v = new Vector2(x, y);
+  private Node findNode(Vector2 point) {
     for (Node n: nodes) {
-      if (v.dst2(n.position) < (Node.RADIUS_SQUARED*1)) return n;
+      if (point.dst2(n.position) < (Node.RADIUS_SQUARED*1)) return n;
     }
     return null;
   }
 
-  private Spring findSpring(float x, float y) {
-    Vector2 point = new Vector2(x, y);
+  private Spring findSpring(Vector2 point) {
     Spring found = null;
     float foundDistance = Float.MAX_VALUE;
     for (Spring s: springs) {

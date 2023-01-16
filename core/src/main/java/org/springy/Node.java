@@ -33,8 +33,8 @@ public class Node {
     shape.dispose();
   }
 
-  public void setPosition(float x, float y) {
-    position.set(x, y);
+  public void setPosition(Vector2 position) {
+    this.position.set(position.x, position.y);
     body.setTransform(position, 0);
   }
 
