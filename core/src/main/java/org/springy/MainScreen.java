@@ -5,7 +5,6 @@ import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.PolygonSpriteBatch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.*;
@@ -17,9 +16,6 @@ import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import space.earlygrey.shapedrawer.ShapeDrawer;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class MainScreen extends ScreenAdapter {
   private OrthographicCamera camera;
@@ -35,10 +31,7 @@ public class MainScreen extends ScreenAdapter {
   private World world = new World(new Vector2(0, -10), true);
   private Bounds bounds = new Bounds(world, new Vector2[] {
     new Vector2(0, 9), new Vector2(0, 0), new Vector2(16, 0), new Vector2(16, 9), });
-  private List<Node> nodes = new ArrayList<>();
-  private List<Spring> springs = new ArrayList<>();
   private boolean isRunning = false;
-  private float time;
 
   @Override
   public void show() {
@@ -118,39 +111,20 @@ public class MainScreen extends ScreenAdapter {
       switch (button) {
         case Input.Buttons.LEFT:
           if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
-            nodes.add(new Node(world, position));
+            Node.create(world, position);
           } else if (Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT)) {
-            var node = findNode(position);
+            var node =  Node.find(position);
             if (node != null) {
-              if (lastNode == null) {
-                lastNode = node;
-              } else {
-                springs.add(new Spring(world, lastNode, node, 0));
-                lastNode = node;
+              if (lastNode != null) {
+                Spring.create(world, lastNode, node, 0);
               }
+              lastNode = node;
             }
           }
           break;
         case Input.Buttons.RIGHT:
-          var node = findNode(position);
-          if (node != null) {
-            var i = springs.iterator();
-            while (i.hasNext()) {
-              var s = i.next();
-              if (s.a == node || s.b == node) {
-                i.remove();
-                s.dispose();
-              }
-            }
-            nodes.remove(node);
-            node.dispose();
-          } else {
-            var spring = findSpring(position);
-            if (spring != null) {
-              springs.remove(spring);
-              spring.dispose();
-            }
-          }
+          var nodeRemoved = Node.remove(position);
+          if (!nodeRemoved) Spring.remove(position);
       }
       return true;
     }
@@ -181,13 +155,13 @@ public class MainScreen extends ScreenAdapter {
         case Input.Buttons.LEFT:
           if (!Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT) && !Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
             var position = getMousePosition();
-            movingNode = findNode(position);
+            movingNode = Node.find(position);
             if (movingNode != null) {
               if (selectedNode != null) selectedNode.selected = false;
               selectedNode = movingNode;
               selectedNode.selected = true;
             } else {
-              var spring = findSpring(position);
+              var spring = Spring.find(position);
               if (spring != null) {
                 if (selectedSpring != null) selectedSpring.selected = false;
                 selectedSpring = spring;
@@ -223,14 +197,8 @@ public class MainScreen extends ScreenAdapter {
     Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
     if (isRunning) {
-			for (Spring spring: springs) {
-				if (spring.amplitude != 0) {
-					float length = (float)(spring.restLength + (spring.amplitude * spring.restLength) * Math.sin(time * spring.frequency * 6.28 + spring.phase));
-					spring.joint.setLength(length);
-				}
-			}
+      Spring.act(1f / 60f);
       world.step(1f / 60f, 6, 2);
-      time += 1f / 60f;
     }
 
     camera.update();
@@ -239,32 +207,12 @@ public class MainScreen extends ScreenAdapter {
     batch.begin();
     background.draw(batch);
     bounds.draw(shapeDrawer);
-    for (Spring spring: springs) spring.draw(shapeDrawer);
-    for (Node node: nodes) node.draw(shapeDrawer);
+    Spring.drawAll(shapeDrawer);
+    Node.drawAll(shapeDrawer);
     batch.end();
 
     stage.getViewport().apply();
     stage.draw();
-  }
-
-  private Node findNode(Vector2 point) {
-    for (Node n: nodes) {
-      if (point.dst2(n.position) < (Node.RADIUS_SQUARED*1)) return n;
-    }
-    return null;
-  }
-
-  private Spring findSpring(Vector2 point) {
-    Spring found = null;
-    float foundDistance = Float.MAX_VALUE;
-    for (Spring s: springs) {
-      var d = Intersector.distanceSegmentPoint(s.a.position, s.b.position, point);
-      if (d < Spring.WIDTH && d < foundDistance) {
-        found = s;
-        foundDistance = d;
-      }
-    }
-    return found;
   }
 
   @Override

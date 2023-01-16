@@ -5,9 +5,49 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import space.earlygrey.shapedrawer.ShapeDrawer;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public class Node {
-  static final float RADIUS = 0.1f;
-  static final float RADIUS_SQUARED = RADIUS * RADIUS;
+  private static final float RADIUS = 0.1f;
+  private static final float RADIUS_SQUARED = RADIUS * RADIUS;
+  private static final Set<Node> nodes = new HashSet<>();
+
+  static void create(World world, Vector2 position) {
+    nodes.add(new Node(world, position));
+  }
+
+  static Node find(Vector2 point) {
+    for (Node n: nodes) {
+      if (point.dst2(n.position) < RADIUS_SQUARED) return n;
+    }
+    return null;
+  }
+
+  static void drawAll(ShapeDrawer shapeDrawer) {
+    for (Node node: nodes) node.draw(shapeDrawer);
+  }
+
+  static void remove(Node node) {
+    nodes.remove(node);
+    node.dispose();
+  }
+
+  static boolean remove(Vector2 position) {
+    var node = find(position);
+    if (node != null) {
+      var iterator = Spring.iterator();
+      while (iterator.hasNext()) {
+        var spring = iterator.next();
+        if (spring.a == node || spring.b == node) {
+          Spring.remove(spring);
+        }
+      }
+      remove(node);
+      return true;
+    }
+    return false;
+  }
 
   World world;
   Body body;
@@ -15,7 +55,7 @@ public class Node {
   float density;
   boolean selected = false;
 
-  public Node(World world, Vector2 position) {
+  private Node(World world, Vector2 position) {
     this.world = world;
     this.position = position;
     BodyDef bodyDef = new BodyDef();
@@ -33,17 +73,17 @@ public class Node {
     shape.dispose();
   }
 
-  public void setPosition(Vector2 position) {
+  void setPosition(Vector2 position) {
     this.position.set(position.x, position.y);
     body.setTransform(position, 0);
   }
 
-  public void draw(ShapeDrawer shapeDrawer) {
+  private void draw(ShapeDrawer shapeDrawer) {
     if (selected) shapeDrawer.setColor(Color.YELLOW); else shapeDrawer.setColor(Color.WHITE);
     shapeDrawer.filledCircle(body.getPosition(), RADIUS);
   }
 
-  public void dispose() {
+  private void dispose() {
     world.destroyBody(body); // TODO other box2d objects too
     world = null;
   }
