@@ -14,7 +14,7 @@ import java.util.Set;
 
 public class Spring {
   private static final float WIDTH = 0.05f;
-  private static final Set<Spring> springs = new HashSet<>();
+  static final Set<Spring> springs = new HashSet<>();
   private static float time = 0;
 
   static Iterator<Spring> iterator() {
@@ -45,7 +45,8 @@ public class Spring {
   static void act(float delta) {
     for (Spring spring: springs) {
       if (spring.amplitude != 0) {
-        float length = (float)(spring.restLength + (spring.amplitude * spring.restLength) * Math.sin(time * spring.frequency * 6.28 + spring.phase));
+        float length = (float)(spring.restLength +
+          (spring.amplitude * spring.restLength) * Math.sin(time * spring.frequency * 6.28 + spring.phase));
         spring.joint.setLength(length);
       }
     }
@@ -88,6 +89,10 @@ public class Spring {
     this.a = a;
     this.b = b;
     this.amplitude = amplitude;
+  }
+
+  void resetRestLength() {
+    joint.setLength(a.position.dst(b.position));
   }
 
   private void draw(ShapeDrawer shapeDrawer) {

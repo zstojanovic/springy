@@ -57,6 +57,11 @@ public class InputHandler extends InputAdapter {
     } else if (Gdx.input.isButtonPressed(Input.Buttons.LEFT)) {
       if (movingNode != null) {
         movingNode.setPosition(getMousePosition());
+        for (Spring spring: Spring.springs) {
+          if (spring.a == movingNode || spring.b == movingNode) {
+            spring.resetRestLength();
+          }
+        }
       }
     }
     return true;
