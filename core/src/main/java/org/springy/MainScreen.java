@@ -6,7 +6,6 @@ import com.badlogic.gdx.graphics.g2d.PolygonSpriteBatch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -18,17 +17,17 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 import space.earlygrey.shapedrawer.ShapeDrawer;
 
 public class MainScreen extends ScreenAdapter {
-  private OrthographicCamera camera;
+  OrthographicCamera camera;
   private Viewport viewport;
 
   private PolygonSpriteBatch batch;
   private ShapeDrawer shapeDrawer;
   private Sprite background;
   private Stage stage;
-  private InputHandler inputHandler = new InputHandler();
+  private InputHandler inputHandler = new InputHandler(this);
   private Table table;
 
-  private World world = new World(new Vector2(0, -10), true);
+  World world = new World(new Vector2(0, -10), true);
   private Bounds bounds = new Bounds(world, new Vector2[] {
     new Vector2(0, 9), new Vector2(0, 0), new Vector2(16, 0), new Vector2(16, 9), });
   private boolean isRunning = false;
@@ -93,102 +92,6 @@ public class MainScreen extends ScreenAdapter {
     mux.addProcessor(stage);
     mux.addProcessor(inputHandler);
     Gdx.input.setInputProcessor(mux);
-  }
-
-  private Vector2 getMousePosition() {
-    var p = camera.unproject(new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0));
-    return new Vector2(p.x, p.y);
-  }
-
-  class InputHandler extends InputAdapter {
-    Node lastNode, movingNode, selectedNode;
-    Spring selectedSpring;
-    Vector3 lastPanPoint;
-
-    @Override
-    public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-      var position = getMousePosition();
-      switch (button) {
-        case Input.Buttons.LEFT:
-          if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
-            Node.create(world, position);
-          } else if (Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT)) {
-            var node =  Node.find(position);
-            if (node != null) {
-              if (lastNode != null) {
-                Spring.create(world, lastNode, node, 0);
-              }
-              lastNode = node;
-            }
-          }
-          break;
-        case Input.Buttons.RIGHT:
-          var nodeRemoved = Node.remove(position);
-          if (!nodeRemoved) Spring.remove(position);
-      }
-      return true;
-    }
-
-    @Override
-    public boolean touchDragged(int screenX, int screenY, int pointer) {
-      if (Gdx.input.isButtonPressed(Input.Buttons.RIGHT)) {
-        var panPoint = new Vector3(screenX, screenY, 0);
-        var pan = camera.unproject(new Vector3(lastPanPoint)).sub(camera.unproject(new Vector3(panPoint)));
-        if (!pan.isZero()) {
-          camera.translate(pan);
-        }
-        lastPanPoint.set(panPoint);
-      } else if (Gdx.input.isButtonPressed(Input.Buttons.LEFT)) {
-        if (movingNode != null) {
-          movingNode.setPosition(getMousePosition());
-        }
-      }
-      return true;
-    }
-
-    @Override
-    public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-      switch (button) {
-        case Input.Buttons.RIGHT:
-          lastPanPoint = new Vector3(screenX, screenY, 0);
-          break;
-        case Input.Buttons.LEFT:
-          if (!Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT) && !Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
-            var position = getMousePosition();
-            movingNode = Node.find(position);
-            if (movingNode != null) {
-              if (selectedNode != null) selectedNode.selected = false;
-              selectedNode = movingNode;
-              selectedNode.selected = true;
-            } else {
-              var spring = Spring.find(position);
-              if (spring != null) {
-                if (selectedSpring != null) selectedSpring.selected = false;
-                selectedSpring = spring;
-                selectedSpring.selected = true;
-              }
-            }
-          }
-      }
-      return true;
-    }
-
-    @Override
-    public boolean keyUp(int keycode) {
-      if (keycode == Input.Keys.CONTROL_LEFT) {
-        lastNode = null;
-      }
-      return true;
-    }
-
-    @Override
-    public boolean scrolled(float amountX, float amountY) {
-      var zoom = camera.zoom * (1 + amountY/20f);
-      if (zoom < 0.2) zoom = 0.2f;
-      if (zoom > 5) zoom = 5;
-      camera.zoom = zoom;
-      return true;
-    }
   }
 
   @Override
