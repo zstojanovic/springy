@@ -9,7 +9,7 @@ import com.badlogic.gdx.math.Vector3;
 public class InputHandler extends InputAdapter {
   private MainScreen screen;
   private Node lastNode, movingNode, selectedNode;
-  private Spring selectedSpring;
+  Spring selectedSpring;
   private Vector3 lastPanPoint;
 
   InputHandler(MainScreen screen) {
@@ -82,6 +82,7 @@ public class InputHandler extends InputAdapter {
               if (selectedSpring != null) selectedSpring.selected = false;
               selectedSpring = spring;
               selectedSpring.selected = true;
+              screen.onSpringSelected();
             }
           }
         }

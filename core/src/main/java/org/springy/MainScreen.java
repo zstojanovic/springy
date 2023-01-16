@@ -7,9 +7,11 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
@@ -25,7 +27,8 @@ public class MainScreen extends ScreenAdapter {
   private Sprite background;
   private Stage stage;
   private InputHandler inputHandler = new InputHandler(this);
-  private Table table;
+  private Window window;
+  private Slider slider;
 
   World world = new World(new Vector2(0, -10), true);
   private Bounds bounds = new Bounds(world, new Vector2[] {
@@ -64,10 +67,10 @@ public class MainScreen extends ScreenAdapter {
     Skin skin = new Skin(Gdx.files.internal("skin/test/uiskin.json"));
     Gdx.input.setInputProcessor(stage);
 
-    table = new Window("", skin);
+    window = new Window("", skin);
     //table.setBackground(skin.getDrawable("default-pane"));
-    table.setPosition(10, stage.getHeight() - 160);
-    table.setSize(150, 150);
+    window.setPosition(10, stage.getHeight() - 160);
+    window.setSize(150, 150);
 
     TextButton textButton = new TextButton("Start", skin);
     textButton.addListener(new ClickListener() {
@@ -77,21 +80,35 @@ public class MainScreen extends ScreenAdapter {
         super.clicked(event, x, y);
       }
     });
-    table.add(textButton).space(8.0f);
+    window.add(textButton).space(8.0f);
 
-    table.row();
+    window.row();
     Label label = new Label("Amplitude", skin);
-    table.add(label).space(8.0f);
+    window.add(label).space(8.0f);
 
-    table.row();
-    Slider slider = new Slider(0.0f, 100.0f, 10.0f, false, skin, "default-horizontal");
-    table.add(slider).space(8.0f);
-    stage.addActor(table);
+    window.row();
+    slider = new Slider(0.0f, 0.5f, 0.5f, false, skin);
+    slider.setDisabled(true);
+    slider.addListener(new ChangeListener() {
+      @Override
+      public void changed(ChangeEvent event, Actor actor) {
+        if (inputHandler.selectedSpring != null) {
+          inputHandler.selectedSpring.amplitude = slider.getValue();
+        }
+      }
+    });
+    window.add(slider).space(8.0f);
+    stage.addActor(window);
 
     var mux = new InputMultiplexer();
     mux.addProcessor(stage);
     mux.addProcessor(inputHandler);
     Gdx.input.setInputProcessor(mux);
+  }
+
+  void onSpringSelected() {
+    slider.setDisabled(false);
+    slider.setValue(inputHandler.selectedSpring.amplitude);
   }
 
   @Override
@@ -122,7 +139,7 @@ public class MainScreen extends ScreenAdapter {
   public void resize(int width, int height) {
     viewport.update(width, height, false);
     stage.getViewport().update(width, height, true);
-    table.setPosition(10, stage.getHeight() - 160);
+    window.setPosition(10, stage.getHeight() - 160);
   }
 
   @Override
