@@ -76,8 +76,14 @@ public class MainScreen extends ScreenAdapter {
     textButton.addListener(new ClickListener() {
       @Override
       public void clicked(InputEvent event, float x, float y) {
-        isRunning = true;
-        super.clicked(event, x, y);
+        if (!isRunning) {
+          isRunning = true;
+          textButton.setText("Reset");
+        } else {
+          isRunning = false;
+          Node.resetAll();
+          textButton.setText("Start");
+        }
       }
     });
     window.add(textButton).space(8.0f);

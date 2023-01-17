@@ -27,6 +27,9 @@ public class Node {
   static void drawAll(ShapeDrawer shapeDrawer) {
     for (Node node: nodes) node.draw(shapeDrawer);
   }
+  static void resetAll() {
+    for (Node node: nodes) node.reset();
+  }
 
   static void remove(Node node) {
     nodes.remove(node);
@@ -71,6 +74,12 @@ public class Node {
     body.createFixture(fixtureDef);
     density = fixtureDef.density; // TODO is this needed?
     shape.dispose();
+  }
+
+  private void reset() {
+    body.setAngularVelocity(0);
+    body.setLinearVelocity(0,0);
+    body.setTransform(position, 0);
   }
 
   void setPosition(Vector2 position) {
