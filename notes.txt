@@ -1,6 +1,5 @@
 TODO
-- beware, finding uses initial coords
-- beware, moving Nodes doesn't change rest length
+- fix springs remove exception
 
 Node
 - create - choose location and create
@@ -31,4 +30,7 @@ Mapping
 - drag and drop - move Node
 - wheel - zoom (or with modifier)
 
-
+Name ideas
+- Spring/Thing/Creature/Critter/Amoeba/Mech/Bug/Insect
+- Lab/Workshop
+- Schproong

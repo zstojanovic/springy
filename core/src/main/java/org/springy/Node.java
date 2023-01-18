@@ -71,7 +71,9 @@ public class Node {
     fixtureDef.shape = shape;
     fixtureDef.density = 0.1f;
     fixtureDef.restitution = 0.4f;
+    fixtureDef.friction = 1;
     body.createFixture(fixtureDef);
+    body.setFixedRotation(true);
     density = fixtureDef.density; // TODO is this needed?
     shape.dispose();
   }
@@ -88,7 +90,7 @@ public class Node {
   }
 
   private void draw(ShapeDrawer shapeDrawer) {
-    if (selected) shapeDrawer.setColor(Color.YELLOW); else shapeDrawer.setColor(Color.WHITE);
+    shapeDrawer.setColor(Color.WHITE);
     shapeDrawer.filledCircle(body.getPosition(), RADIUS);
   }
 

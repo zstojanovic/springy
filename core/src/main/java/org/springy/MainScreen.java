@@ -28,12 +28,13 @@ public class MainScreen extends ScreenAdapter {
   private Stage stage;
   private InputHandler inputHandler = new InputHandler(this);
   private Window window;
-  private Slider slider;
+  private Slider amplSlider, phaseSlider;
 
   World world = new World(new Vector2(0, -10), true);
   private Bounds bounds = new Bounds(world, new Vector2[] {
-    new Vector2(0, 9), new Vector2(0, 0), new Vector2(16, 0), new Vector2(16, 9), });
+    new Vector2(0, 9), new Vector2(0, 4), new Vector2(8, 0), new Vector2(16, 0), new Vector2(16, 9), });
   private boolean isRunning = false;
+  private boolean stateChangeRequested = false;
 
   @Override
   public void show() {
@@ -55,7 +56,7 @@ public class MainScreen extends ScreenAdapter {
     bgTexture.setFilter(Texture.TextureFilter.MipMapNearestLinear, Texture.TextureFilter.MipMapNearestLinear);
     bgTexture.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
 
-    background = new Sprite(bgTexture, 2*20*64, (int)(2*11.25*64)); // 20x11,25
+    background = new Sprite(bgTexture, 2*20*64, (int)(2*11.25*64));
     background.setOrigin(0, 0);
     background.setScale(0.00625f);
 
@@ -68,42 +69,50 @@ public class MainScreen extends ScreenAdapter {
     Gdx.input.setInputProcessor(stage);
 
     window = new Window("", skin);
-    //table.setBackground(skin.getDrawable("default-pane"));
     window.setPosition(10, stage.getHeight() - 160);
-    window.setSize(150, 150);
+    window.setSize(220, 150);
 
-    TextButton textButton = new TextButton("Start", skin);
+    window.add();
+    TextButton textButton = new TextButton("Start/Stop", skin);
     textButton.addListener(new ClickListener() {
       @Override
       public void clicked(InputEvent event, float x, float y) {
-        if (!isRunning) {
-          isRunning = true;
-          textButton.setText("Reset");
-        } else {
-          isRunning = false;
-          Node.resetAll();
-          textButton.setText("Start");
-        }
+        stateChangeRequested = true;
       }
     });
-    window.add(textButton).space(8.0f);
+    window.add(textButton).padBottom(10);
 
     window.row();
-    Label label = new Label("Amplitude", skin);
-    window.add(label).space(8.0f);
+    Label amplLabel = new Label("Ampl", skin);
+    window.add(amplLabel).padRight(10);
 
-    window.row();
-    slider = new Slider(0.0f, 0.5f, 0.5f, false, skin);
-    slider.setDisabled(true);
-    slider.addListener(new ChangeListener() {
+    amplSlider = new Slider(0.0f, 0.5f, 0.1f, false, skin);
+    amplSlider.setDisabled(true);
+    amplSlider.addListener(new ChangeListener() {
       @Override
       public void changed(ChangeEvent event, Actor actor) {
         if (inputHandler.selectedSpring != null) {
-          inputHandler.selectedSpring.amplitude = slider.getValue();
+          inputHandler.selectedSpring.amplitude = amplSlider.getValue();
         }
       }
     });
-    window.add(slider).space(8.0f);
+    window.add(amplSlider);
+
+    window.row();
+    Label label = new Label("Phase", skin);
+    window.add(label).padRight(10.0f);
+
+    phaseSlider = new Slider(0, 360, 30, false, skin);
+    phaseSlider.setDisabled(true);
+    phaseSlider.addListener(new ChangeListener() {
+      @Override
+      public void changed(ChangeEvent event, Actor actor) {
+        if (inputHandler.selectedSpring != null) {
+          inputHandler.selectedSpring.phase = phaseSlider.getValue();
+        }
+      }
+    });
+    window.add(phaseSlider);
     stage.addActor(window);
 
     var mux = new InputMultiplexer();
@@ -113,8 +122,11 @@ public class MainScreen extends ScreenAdapter {
   }
 
   void onSpringSelected() {
-    slider.setDisabled(false);
-    slider.setValue(inputHandler.selectedSpring.amplitude);
+    System.out.println("onSpringSelected...");
+    amplSlider.setDisabled(false);
+    amplSlider.setValue(inputHandler.selectedSpring.amplitude);
+    phaseSlider.setDisabled(false);
+    phaseSlider.setValue(inputHandler.selectedSpring.phase);
   }
 
   @Override
@@ -122,6 +134,19 @@ public class MainScreen extends ScreenAdapter {
     Gdx.gl.glClearColor(0.15f, 0.15f, 0.2f, 1f);
     Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
+    if (stateChangeRequested) {
+      if (!isRunning) {
+        System.out.println("Starting...");
+        isRunning = true;
+        inputHandler.unselectSpring();
+      } else {
+        System.out.println("Resetting...");
+        isRunning = false;
+        Node.resetAll();
+        Spring.resetAll();
+      }
+      stateChangeRequested = false;
+    }
     if (isRunning) {
       Spring.act(1f / 60f);
       world.step(1f / 60f, 6, 2);

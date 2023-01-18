@@ -16,6 +16,13 @@ public class InputHandler extends InputAdapter {
     this.screen = screen;
   }
 
+  void unselectSpring() {
+    if (selectedSpring != null) {
+      selectedSpring.selected = false;
+      selectedSpring = null;
+    }
+  }
+
   private Vector2 getMousePosition() {
     var p = screen.camera.unproject(new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0));
     return new Vector2(p.x, p.y);
@@ -32,7 +39,7 @@ public class InputHandler extends InputAdapter {
           var node =  Node.find(position);
           if (node != null) {
             if (lastNode != null) {
-              Spring.create(screen.world, lastNode, node, 0);
+              Spring.create(screen.world, lastNode, node, 0, 0);
             }
             lastNode = node;
           }

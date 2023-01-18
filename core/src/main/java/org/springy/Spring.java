@@ -21,8 +21,8 @@ public class Spring {
     return springs.iterator();
   }
 
-  static void create(World world, Node a, Node b, float amplitude) {
-    springs.add(new Spring(world, a, b, amplitude));
+  static void create(World world, Node a, Node b, float amplitude, float phase) {
+    springs.add(new Spring(world, a, b, amplitude, phase));
   }
 
   static Spring find(Vector2 point) {
@@ -42,11 +42,16 @@ public class Spring {
     for (Spring spring: springs) spring.draw(shapeDrawer);
   }
 
+  static void resetAll() {
+    time = 0;
+    for (Spring spring: springs) spring.resetRestLength();
+  }
+
   static void act(float delta) {
     for (Spring spring: springs) {
       if (spring.amplitude != 0) {
         float length = (float)(spring.restLength +
-          (spring.amplitude * spring.restLength) * Math.sin(time * spring.frequency * 6.28 + spring.phase));
+          (spring.amplitude * spring.restLength) * Math.sin(time * spring.frequency * 6.28 + (spring.phase/180*3.14)));
         spring.joint.setLength(length);
       }
     }
@@ -69,15 +74,14 @@ public class Spring {
 
   World world;
   DistanceJoint joint;
-  float amplitude = 0;
+  float amplitude;
   float frequency = 0.5f; // TODO hm, why?
-  float phase = 0;
+  float phase;
   float restLength;
   Node a, b;
   boolean selected = false;
 
-  private Spring(World world, Node a, Node b, float amplitude) {
-    //DistanceJoint joint, float amplitude, float frequency, float phase) {
+  private Spring(World world, Node a, Node b, float amplitude, float phase) {
     DistanceJointDef jointDef = new DistanceJointDef();
     jointDef.initialize(a.body, b.body, a.body.getWorldCenter(), b.body.getWorldCenter());
     jointDef.frequencyHz = 10;
@@ -89,6 +93,7 @@ public class Spring {
     this.a = a;
     this.b = b;
     this.amplitude = amplitude;
+    this.phase = phase;
   }
 
   void resetRestLength() {
@@ -96,8 +101,14 @@ public class Spring {
   }
 
   private void draw(ShapeDrawer shapeDrawer) {
-    if (selected) shapeDrawer.setColor(Color.YELLOW); else shapeDrawer.setColor(Color.WHITE);
-    shapeDrawer.setDefaultLineWidth(WIDTH);
+    if (selected) {
+      shapeDrawer.setColor(Color.YELLOW);
+      shapeDrawer.setDefaultLineWidth(WIDTH * 1.5f);
+      shapeDrawer.line(a.body.getPosition(), b.body.getPosition());
+    }
+
+    if (amplitude == 0) shapeDrawer.setColor(Color.WHITE); else shapeDrawer.setColor(Color.BLUE);
+    if (selected) shapeDrawer.setDefaultLineWidth(WIDTH * 0.5f); else shapeDrawer.setDefaultLineWidth(WIDTH);
     shapeDrawer.line(a.body.getPosition(), b.body.getPosition());
   }
 
