@@ -31,11 +31,6 @@ public class Node {
     for (Node node: nodes) node.reset();
   }
 
-  static void remove(Node node) {
-    nodes.remove(node);
-    node.dispose();
-  }
-
   static boolean remove(Vector2 position) {
     var node = find(position);
     if (node != null) {
@@ -46,7 +41,8 @@ public class Node {
           Spring.remove(spring);
         }
       }
-      remove(node);
+      nodes.remove(node);
+      node.dispose();
       return true;
     }
     return false;

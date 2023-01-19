@@ -34,20 +34,20 @@ public class InputHandler extends InputAdapter {
     switch (button) {
       case Input.Buttons.LEFT:
         if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
-          Node.create(screen.world, position);
+          screen.device.createNode(position);
         } else if (Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT)) {
-          var node =  Node.find(position);
+          var node = screen.device.findNode(position);
           if (node != null) {
             if (lastNode != null) {
-              Spring.create(screen.world, lastNode, node, 0, 0);
+              screen.device.createSpring(lastNode, node, 0, 0);
             }
             lastNode = node;
           }
         }
         break;
       case Input.Buttons.RIGHT:
-        var nodeRemoved = Node.remove(position);
-        if (!nodeRemoved) Spring.remove(position);
+        var nodeRemoved = screen.device.removeNode(position);
+        if (!nodeRemoved) screen.device.removeSpring(position);
     }
     return true;
   }
@@ -63,12 +63,7 @@ public class InputHandler extends InputAdapter {
       lastPanPoint.set(panPoint);
     } else if (Gdx.input.isButtonPressed(Input.Buttons.LEFT)) {
       if (movingNode != null) {
-        movingNode.setPosition(getMousePosition());
-        for (Spring spring: Spring.springs) {
-          if (spring.a == movingNode || spring.b == movingNode) {
-            spring.resetRestLength();
-          }
-        }
+        screen.device.repositionNode(movingNode, getMousePosition());
       }
     }
     return true;
@@ -83,13 +78,13 @@ public class InputHandler extends InputAdapter {
       case Input.Buttons.LEFT:
         if (!Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT) && !Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
           var position = getMousePosition();
-          movingNode = Node.find(position);
+          movingNode = screen.device.findNode(position);
           if (movingNode != null) {
             if (selectedNode != null) selectedNode.selected = false;
             selectedNode = movingNode;
             selectedNode.selected = true;
           } else {
-            var spring = Spring.find(position);
+            var spring = screen.device.findSpring(position);
             if (spring != null) {
               if (selectedSpring != null) selectedSpring.selected = false;
               selectedSpring = spring;

@@ -33,7 +33,7 @@ public class MainScreen extends ScreenAdapter {
   World world = new World(new Vector2(0, -10), true);
   private Bounds bounds = new Bounds(world, new Vector2[] {
     new Vector2(0, 9), new Vector2(0, 4), new Vector2(8, 0), new Vector2(16, 0), new Vector2(16, 9), });
-  private Device device;
+  Device device;
   private boolean isRunning = false;
   private boolean stateChangeRequested = false;
 

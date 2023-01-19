@@ -64,7 +64,7 @@ public class Spring {
   }
 
   static boolean remove(Vector2 position) {
-    var spring = Spring.find(position);
+    var spring = find(position);
     if (spring != null) {
       remove(spring);
       return true;
