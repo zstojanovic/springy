@@ -5,6 +5,8 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
+import org.springy.physics.Node;
+import org.springy.physics.Spring;
 
 public class InputHandler extends InputAdapter {
   private MainScreen screen;
@@ -18,7 +20,7 @@ public class InputHandler extends InputAdapter {
 
   void unselectSpring() {
     if (selectedSpring != null) {
-      selectedSpring.selected = false;
+      selectedSpring.setSelected(false);
       selectedSpring = null;
     }
   }
@@ -80,15 +82,15 @@ public class InputHandler extends InputAdapter {
           var position = getMousePosition();
           movingNode = screen.device.findNode(position);
           if (movingNode != null) {
-            if (selectedNode != null) selectedNode.selected = false;
+            if (selectedNode != null) selectedNode.setSelected(false);
             selectedNode = movingNode;
-            selectedNode.selected = true;
+            selectedNode.setSelected(true);
           } else {
             var spring = screen.device.findSpring(position);
             if (spring != null) {
-              if (selectedSpring != null) selectedSpring.selected = false;
+              if (selectedSpring != null) selectedSpring.setSelected(false);
               selectedSpring = spring;
-              selectedSpring.selected = true;
+              selectedSpring.setSelected(true);
               screen.onSpringSelected();
             }
           }

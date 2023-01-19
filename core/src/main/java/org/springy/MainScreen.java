@@ -16,6 +16,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import org.springy.physics.Device;
 import space.earlygrey.shapedrawer.ShapeDrawer;
 
 public class MainScreen extends ScreenAdapter {
@@ -96,7 +97,7 @@ public class MainScreen extends ScreenAdapter {
       @Override
       public void changed(ChangeEvent event, Actor actor) {
         if (inputHandler.selectedSpring != null) {
-          inputHandler.selectedSpring.amplitude = amplSlider.getValue();
+          inputHandler.selectedSpring.setAmplitude(amplSlider.getValue());
         }
       }
     });
@@ -112,7 +113,7 @@ public class MainScreen extends ScreenAdapter {
       @Override
       public void changed(ChangeEvent event, Actor actor) {
         if (inputHandler.selectedSpring != null) {
-          inputHandler.selectedSpring.phase = phaseSlider.getValue();
+          inputHandler.selectedSpring.setPhase(phaseSlider.getValue());
         }
       }
     });
@@ -128,9 +129,9 @@ public class MainScreen extends ScreenAdapter {
   void onSpringSelected() {
     System.out.println("onSpringSelected...");
     amplSlider.setDisabled(false);
-    amplSlider.setValue(inputHandler.selectedSpring.amplitude);
+    amplSlider.setValue(inputHandler.selectedSpring.amplitude());
     phaseSlider.setDisabled(false);
-    phaseSlider.setValue(inputHandler.selectedSpring.phase);
+    phaseSlider.setValue(inputHandler.selectedSpring.phase());
   }
 
   void act(float delta) {
