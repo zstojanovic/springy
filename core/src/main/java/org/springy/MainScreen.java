@@ -33,6 +33,7 @@ public class MainScreen extends ScreenAdapter {
   World world = new World(new Vector2(0, -10), true);
   private Bounds bounds = new Bounds(world, new Vector2[] {
     new Vector2(0, 9), new Vector2(0, 4), new Vector2(8, 0), new Vector2(16, 0), new Vector2(16, 9), });
+  private Device device;
   private boolean isRunning = false;
   private boolean stateChangeRequested = false;
 
@@ -61,6 +62,9 @@ public class MainScreen extends ScreenAdapter {
     background.setScale(0.00625f);
 
     createUI();
+
+    device = new Device(world);
+
   }
 
   private void createUI() {
@@ -129,10 +133,8 @@ public class MainScreen extends ScreenAdapter {
     phaseSlider.setValue(inputHandler.selectedSpring.phase);
   }
 
-  @Override
-  public void render(float delta) {
-    Gdx.gl.glClearColor(0.15f, 0.15f, 0.2f, 1f);
-    Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+  void act(float delta) {
+    stage.act(delta);
 
     if (stateChangeRequested) {
       if (!isRunning) {
@@ -142,15 +144,22 @@ public class MainScreen extends ScreenAdapter {
       } else {
         System.out.println("Resetting...");
         isRunning = false;
-        Node.resetAll();
-        Spring.resetAll();
+        device.reset();
       }
       stateChangeRequested = false;
     }
     if (isRunning) {
-      Spring.act(1f / 60f);
-      world.step(1f / 60f, 6, 2);
+      device.act(delta);
+      world.step(delta, 6, 2);
     }
+  }
+
+  @Override
+  public void render(float delta) {
+    act(delta);
+
+    Gdx.gl.glClearColor(0.15f, 0.15f, 0.2f, 1f);
+    Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
     camera.update();
     batch.setProjectionMatrix(camera.combined);
@@ -158,8 +167,7 @@ public class MainScreen extends ScreenAdapter {
     batch.begin();
     background.draw(batch);
     bounds.draw(shapeDrawer);
-    Spring.drawAll(shapeDrawer);
-    Node.drawAll(shapeDrawer);
+    device.draw(shapeDrawer);
     batch.end();
 
     stage.getViewport().apply();
