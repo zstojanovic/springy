@@ -45,7 +45,8 @@ public class Device {
       while (iterator.hasNext()) {
         var spring = iterator.next();
         if (spring.a == node || spring.b == node) {
-          removeSpring(spring);
+          iterator.remove();
+          spring.dispose();
         }
       }
       nodes.remove(node);
@@ -75,15 +76,11 @@ public class Device {
   public boolean removeSpring(Vector2 position) {
     var spring = findSpring(position);
     if (spring != null) {
-      removeSpring(spring);
+      springs.remove(spring);
+      spring.dispose();
       return true;
     }
     return false;
-  }
-
-  private void removeSpring(Spring spring) {
-    springs.remove(spring);
-    spring.dispose();
   }
 
   public void reset() {
