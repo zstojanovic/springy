@@ -1,4 +1,4 @@
-package org.springy;
+package org.springy.physics;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector2;
@@ -7,10 +7,12 @@ import com.badlogic.gdx.utils.Array;
 import space.earlygrey.shapedrawer.ShapeDrawer;
 
 public class Bounds {
-  private Array<Vector2> vertices;
+  private Array<Vector2> path;
 
-  Bounds(World world, Vector2[] vertices) {
-    this.vertices = new Array<>(vertices);
+  public Bounds(World world) {
+    var vertices = new Vector2[] { new Vector2(0, 9), new Vector2(0, 2),
+      new Vector2(8, 0), new Vector2(16, 0), new Vector2(16, 9) };
+    path = new Array<>(vertices);
     BodyDef bodyDef1 = new BodyDef();
     bodyDef1.type = BodyDef.BodyType.StaticBody;
     FixtureDef fixtureDef1 = new FixtureDef();
@@ -26,6 +28,6 @@ public class Bounds {
   public void draw(ShapeDrawer shapeDrawer) {
     shapeDrawer.setDefaultLineWidth(0.05f);
     shapeDrawer.setColor(Color.WHITE);
-    shapeDrawer.path(vertices, true);
+    shapeDrawer.path(path, true);
   }
 }

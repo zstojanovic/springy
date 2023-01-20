@@ -1,4 +1,8 @@
-# springynew
+# Springy
+
+This is just a prototype, nothing to see here, move along...
+
+---
 
 A [libGDX](https://libgdx.com/) project generated with [gdx-liftoff](https://github.com/tommyettinger/gdx-liftoff).
 

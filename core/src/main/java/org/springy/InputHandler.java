@@ -26,8 +26,8 @@ public class InputHandler extends InputAdapter {
   }
 
   private Vector2 getMousePosition() {
-    var p = screen.camera.unproject(new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0));
-    return new Vector2(p.x, p.y);
+    var position = screen.camera.unproject(new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0));
+    return new Vector2(position.x, position.y);
   }
 
   @Override

@@ -16,6 +16,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import org.springy.physics.Bounds;
 import org.springy.physics.Device;
 import space.earlygrey.shapedrawer.ShapeDrawer;
 
@@ -32,8 +33,7 @@ public class MainScreen extends ScreenAdapter {
   private Slider amplSlider, phaseSlider;
 
   World world = new World(new Vector2(0, -10), true);
-  private Bounds bounds = new Bounds(world, new Vector2[] {
-    new Vector2(0, 9), new Vector2(0, 4), new Vector2(8, 0), new Vector2(16, 0), new Vector2(16, 9), });
+  private Bounds bounds = new Bounds(world);
   Device device;
   private boolean isRunning = false;
   private boolean stateChangeRequested = false;
@@ -46,15 +46,15 @@ public class MainScreen extends ScreenAdapter {
     viewport = new ExtendViewport(Game.WIDTH, Game.HEIGHT, camera);
     batch = new PolygonSpriteBatch();
 
-    Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
+    var pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
     pixmap.setColor(Color.WHITE);
     pixmap.drawPixel(0, 0);
-    Texture texture = new Texture(pixmap); //remember to dispose of later
+    var texture = new Texture(pixmap); //remember to dispose of later
     pixmap.dispose();
-    TextureRegion region = new TextureRegion(texture, 0, 0, 1, 1);
+    var region = new TextureRegion(texture, 0, 0, 1, 1);
     shapeDrawer = new ShapeDrawer(batch, region);
 
-    Texture bgTexture = new Texture(Gdx.files.internal("bluegrid.png"), true);
+    var bgTexture = new Texture(Gdx.files.internal("bluegrid.png"), true);
     bgTexture.setFilter(Texture.TextureFilter.MipMapNearestLinear, Texture.TextureFilter.MipMapNearestLinear);
     bgTexture.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
 
@@ -65,12 +65,11 @@ public class MainScreen extends ScreenAdapter {
     createUI();
 
     device = new Device(world);
-
   }
 
   private void createUI() {
     stage = new Stage(new ScreenViewport());
-    Skin skin = new Skin(Gdx.files.internal("skin/test/uiskin.json"));
+    var skin = new Skin(Gdx.files.internal("skin/test/uiskin.json"));
     Gdx.input.setInputProcessor(stage);
 
     window = new Window("", skin);
@@ -78,17 +77,17 @@ public class MainScreen extends ScreenAdapter {
     window.setSize(220, 150);
 
     window.add();
-    TextButton textButton = new TextButton("Start/Stop", skin);
-    textButton.addListener(new ClickListener() {
+    var button = new TextButton("Start/Stop", skin);
+    button.addListener(new ClickListener() {
       @Override
       public void clicked(InputEvent event, float x, float y) {
         stateChangeRequested = true;
       }
     });
-    window.add(textButton).padBottom(10);
+    window.add(button).padBottom(10);
 
     window.row();
-    Label amplLabel = new Label("Ampl", skin);
+    var amplLabel = new Label("Ampl", skin);
     window.add(amplLabel).padRight(10);
 
     amplSlider = new Slider(0.0f, 0.5f, 0.1f, false, skin);
@@ -104,8 +103,8 @@ public class MainScreen extends ScreenAdapter {
     window.add(amplSlider);
 
     window.row();
-    Label label = new Label("Phase", skin);
-    window.add(label).padRight(10.0f);
+    var phaseLabel = new Label("Phase", skin);
+    window.add(phaseLabel).padRight(10.0f);
 
     phaseSlider = new Slider(0, 360, 30, false, skin);
     phaseSlider.setDisabled(true);
@@ -127,7 +126,6 @@ public class MainScreen extends ScreenAdapter {
   }
 
   void onSpringSelected() {
-    System.out.println("onSpringSelected...");
     amplSlider.setDisabled(false);
     amplSlider.setValue(inputHandler.selectedSpring.amplitude());
     phaseSlider.setDisabled(false);
@@ -139,11 +137,9 @@ public class MainScreen extends ScreenAdapter {
 
     if (stateChangeRequested) {
       if (!isRunning) {
-        System.out.println("Starting...");
         isRunning = true;
         inputHandler.unselectSpring();
       } else {
-        System.out.println("Resetting...");
         isRunning = false;
         device.reset();
       }

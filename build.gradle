@@ -29,7 +29,7 @@ configure(subprojects) {
 
 subprojects {
 	version = '1.0.0'
-	ext.appName = 'springynew'
+	ext.appName = 'springy'
 	repositories {
 		mavenCentral()
 		maven { url 'https://s01.oss.sonatype.org' }
@@ -41,4 +41,4 @@ subprojects {
 	}
 }
 
-eclipse.project.name = 'springynew' + '-parent'
+eclipse.project.name = 'springy' + '-parent'
