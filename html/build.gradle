@@ -21,10 +21,15 @@ gwt {
     devModules 'org.springy.GdxDefinitionSuperdev'
     project.webAppDirName = 'webapp'
 
-    compiler.strict = true
-    compiler.disableCastChecking = true
     //// The next line can be useful to uncomment if you want output that hasn't been obfuscated.
 //	compiler.style = org.wisepersist.gradle.plugins.gwt.Style.DETAILED
+
+    compiler {
+        saveSource = true;
+        strict = true;
+        disableCastChecking = true;
+        sourceLevel = 11
+    }
 }
 
 dependencies {

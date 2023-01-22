@@ -3,19 +3,22 @@ package org.springy.physics;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
+import org.springy.data.NodeData;
 import space.earlygrey.shapedrawer.ShapeDrawer;
 
 public class Node {
   static final float RADIUS = 0.1f;
   static final float RADIUS_SQUARED = RADIUS * RADIUS;
 
+  int id;
   World world;
   Body body;
   Vector2 position;
   float density;
   boolean selected = false;
 
-  Node(World world, Vector2 position) {
+  Node(int id, World world, Vector2 position) {
+    this.id = id;
     this.world = world;
     this.position = position;
     BodyDef bodyDef = new BodyDef();
@@ -58,5 +61,9 @@ public class Node {
   void dispose() {
     world.destroyBody(body);
     world = null;
+  }
+
+  NodeData getData() {
+    return new NodeData(id, position.x, position.y);
   }
 }

@@ -1,21 +1,26 @@
 package org.springy;
 
-import com.badlogic.gdx.*;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.InputMultiplexer;
+import com.badlogic.gdx.Preferences;
+import com.badlogic.gdx.ScreenAdapter;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.PolygonSpriteBatch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.physics.box2d.*;
+import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import org.springy.data.DeviceData;
 import org.springy.physics.Bounds;
 import org.springy.physics.Device;
 import space.earlygrey.shapedrawer.ShapeDrawer;
@@ -37,6 +42,8 @@ public class MainScreen extends ScreenAdapter {
   Device device;
   private boolean isRunning = false;
   private boolean stateChangeRequested = false;
+
+  Preferences preferences;
 
   @Override
   public void show() {
@@ -65,6 +72,7 @@ public class MainScreen extends ScreenAdapter {
     createUI();
 
     device = new Device(world);
+    preferences = Gdx.app.getPreferences("springy");
   }
 
   private void createUI() {
@@ -73,8 +81,8 @@ public class MainScreen extends ScreenAdapter {
     Gdx.input.setInputProcessor(stage);
 
     window = new Window("", skin);
-    window.setPosition(10, stage.getHeight() - 160);
-    window.setSize(220, 150);
+    window.setPosition(10, stage.getHeight() - 170);
+    window.setSize(220, 160);
 
     window.add();
     var button = new TextButton("Start/Stop", skin);
@@ -104,7 +112,7 @@ public class MainScreen extends ScreenAdapter {
 
     window.row();
     var phaseLabel = new Label("Phase", skin);
-    window.add(phaseLabel).padRight(10.0f);
+    window.add(phaseLabel).padRight(10).padBottom(10);
 
     phaseSlider = new Slider(0, 360, 30, false, skin);
     phaseSlider.setDisabled(true);
@@ -117,6 +125,29 @@ public class MainScreen extends ScreenAdapter {
       }
     });
     window.add(phaseSlider);
+
+    window.row();
+    var saveButton = new TextButton("Save", skin);
+    saveButton.addListener(new ClickListener() {
+      @Override
+      public void clicked(InputEvent event, float x, float y) {
+        var save1 = new Json().toJson(device.getData());
+        preferences.putString("save1", save1);
+        preferences.flush();
+      }
+    });
+    window.add(saveButton);
+
+    var loadButton = new TextButton("Load", skin);
+    loadButton.addListener(new ClickListener() {
+      @Override
+      public void clicked(InputEvent event, float x, float y) {
+        var save1 = preferences.getString("save1");
+        var data = new Json().fromJson(DeviceData.class, save1);
+        if (data != null) device.load(data);
+      }
+    });
+    window.add(loadButton);
     stage.addActor(window);
 
     var mux = new InputMultiplexer();
@@ -175,7 +206,7 @@ public class MainScreen extends ScreenAdapter {
   public void resize(int width, int height) {
     viewport.update(width, height, false);
     stage.getViewport().update(width, height, true);
-    window.setPosition(10, stage.getHeight() - 160);
+    window.setPosition(10, stage.getHeight() - 170);
   }
 
   @Override

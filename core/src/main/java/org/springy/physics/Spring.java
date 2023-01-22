@@ -4,11 +4,13 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.physics.box2d.joints.DistanceJoint;
 import com.badlogic.gdx.physics.box2d.joints.DistanceJointDef;
+import org.springy.data.SpringData;
 import space.earlygrey.shapedrawer.ShapeDrawer;
 
 public class Spring {
   static final float WIDTH = 0.05f;
 
+  int id;
   World world;
   DistanceJoint joint;
   float amplitude;
@@ -18,7 +20,7 @@ public class Spring {
   Node a, b;
   boolean selected = false;
 
-  Spring(World world, Node a, Node b, float amplitude, float phase) {
+  Spring(int id, World world, Node a, Node b, float amplitude, float phase) {
     DistanceJointDef jointDef = new DistanceJointDef();
     jointDef.initialize(a.body, b.body, a.body.getWorldCenter(), b.body.getWorldCenter());
     jointDef.frequencyHz = 10;
@@ -26,6 +28,7 @@ public class Spring {
     joint = (DistanceJoint)world.createJoint(jointDef);
     this.restLength = joint.getLength();
 
+    this.id = id;
     this.world = world;
     this.a = a;
     this.b = b;
@@ -74,5 +77,9 @@ public class Spring {
     b = null;
     world.destroyJoint(joint);
     world = null;
+  }
+
+  SpringData getData() {
+    return new SpringData(id, a.id, b.id, amplitude, phase);
   }
 }
