@@ -134,16 +134,20 @@ public class Device {
     nodeMap.values().forEach(Node::dispose);
     nodeMap.entrySet().removeIf(e -> true);
 
-    Arrays.stream(data.nodes).forEach(d -> createNode(d.id, new Vector2(d.x, d.y)));
-    Arrays.stream(data.springs).forEach(d -> {
-      var a = nodeMap.get(d.nodeAId);
-      var b = nodeMap.get(d.nodeBId);
-      createSpring(d.id, a, b, d.amplitude, d.phase);
-    });
+    if (data != null) {
+      Arrays.stream(data.nodes).forEach(d -> createNode(d.id, new Vector2(d.x, d.y)));
+      Arrays.stream(data.springs).forEach(d -> {
+        var a = nodeMap.get(d.nodeAId);
+        var b = nodeMap.get(d.nodeBId);
+        createSpring(d.id, a, b, d.amplitude, d.phase);
+      });
 
-    var maxNodeId = Arrays.stream(data.nodes).mapToInt(n -> n.id).max().orElse(0);
-    var maxSpringId = Arrays.stream(data.springs).mapToInt(s -> s.id).max().orElse(0);
+      var maxNodeId = Arrays.stream(data.nodes).mapToInt(n -> n.id).max().orElse(0);
+      var maxSpringId = Arrays.stream(data.springs).mapToInt(s -> s.id).max().orElse(0);
 
-    idSequence.set(Integer.max(maxNodeId, maxSpringId) + 1);
+      idSequence.set(Integer.max(maxNodeId, maxSpringId) + 1);
+    } else {
+      idSequence.set(0);
+    }
   }
 }

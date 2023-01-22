@@ -36,6 +36,7 @@ public class MainScreen extends ScreenAdapter {
   private InputHandler inputHandler = new InputHandler(this);
   private Window window;
   private Slider amplSlider, phaseSlider;
+  private String currentSave;
 
   World world = new World(new Vector2(0, -10), true);
   private Bounds bounds = new Bounds(world);
@@ -69,10 +70,9 @@ public class MainScreen extends ScreenAdapter {
     background.setOrigin(0, 0);
     background.setScale(0.00625f);
 
-    createUI();
-
     device = new Device(world);
     preferences = Gdx.app.getPreferences("springy");
+    createUI();
   }
 
   private void createUI() {
@@ -81,10 +81,25 @@ public class MainScreen extends ScreenAdapter {
     Gdx.input.setInputProcessor(stage);
 
     window = new Window("", skin);
-    window.setPosition(10, stage.getHeight() - 170);
-    window.setSize(220, 160);
+    window.setPosition(10, stage.getHeight() - 160);
+    window.setSize(240, 150);
 
-    window.add();
+    var select = new SelectBox<String>(skin);
+    var items = new String[10];
+    for (int i = 0; i < 10; i++) items[i] = "Save " + i;
+    select.setItems(items);
+    currentSave = select.getSelected();
+    load(currentSave);
+    select.addListener(new ChangeListener() {
+      @Override
+      public void changed(ChangeEvent event, Actor actor) {
+        save(currentSave);
+        currentSave = select.getSelected();
+        load(currentSave);
+      }
+    });
+    window.add(select).padBottom(10);
+
     var button = new TextButton("Start/Stop", skin);
     button.addListener(new ClickListener() {
       @Override
@@ -125,29 +140,6 @@ public class MainScreen extends ScreenAdapter {
       }
     });
     window.add(phaseSlider);
-
-    window.row();
-    var saveButton = new TextButton("Save", skin);
-    saveButton.addListener(new ClickListener() {
-      @Override
-      public void clicked(InputEvent event, float x, float y) {
-        var save1 = new Json().toJson(device.getData());
-        preferences.putString("save1", save1);
-        preferences.flush();
-      }
-    });
-    window.add(saveButton);
-
-    var loadButton = new TextButton("Load", skin);
-    loadButton.addListener(new ClickListener() {
-      @Override
-      public void clicked(InputEvent event, float x, float y) {
-        var save1 = preferences.getString("save1");
-        var data = new Json().fromJson(DeviceData.class, save1);
-        if (data != null) device.load(data);
-      }
-    });
-    window.add(loadButton);
     stage.addActor(window);
 
     var mux = new InputMultiplexer();
@@ -161,6 +153,18 @@ public class MainScreen extends ScreenAdapter {
     amplSlider.setValue(inputHandler.selectedSpring.amplitude());
     phaseSlider.setDisabled(false);
     phaseSlider.setValue(inputHandler.selectedSpring.phase());
+  }
+
+  void load(String key) {
+    var json = preferences.getString(key);
+    var data = new Json().fromJson(DeviceData.class, json);
+    device.load(data);
+  }
+
+  void save(String key) {
+    var json = new Json().toJson(device.getData());
+    preferences.putString(key, json);
+    preferences.flush();
   }
 
   void act(float delta) {
@@ -206,7 +210,13 @@ public class MainScreen extends ScreenAdapter {
   public void resize(int width, int height) {
     viewport.update(width, height, false);
     stage.getViewport().update(width, height, true);
-    window.setPosition(10, stage.getHeight() - 170);
+    window.setPosition(10, stage.getHeight() - 160);
+  }
+
+  @Override
+  public void hide() {
+    super.hide();
+    save(currentSave);
   }
 
   @Override
