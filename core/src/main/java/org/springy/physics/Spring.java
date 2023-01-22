@@ -58,6 +58,7 @@ public class Spring {
 
   void resetRestLength() {
     joint.setLength(a.position.dst(b.position));
+    this.restLength = joint.getLength();
   }
 
   void draw(ShapeDrawer shapeDrawer) {
