@@ -46,6 +46,7 @@ public class Node {
     body.setAngularVelocity(0);
     body.setLinearVelocity(0,0);
     body.setTransform(position, 0);
+    body.setAwake(true);
   }
 
   void setPosition(Vector2 position) {
