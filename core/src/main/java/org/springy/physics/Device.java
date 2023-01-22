@@ -32,7 +32,7 @@ public class Device {
 
   public Node findNode(Vector2 position) {
     for (Node n: nodeMap.values()) {
-      if (position.dst2(n.position) < Node.RADIUS_SQUARED) return n;
+      if (position.dst2(n.position) < Node.RADIUS_SQUARED*4) return n;
     }
     return null;
   }

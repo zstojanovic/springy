@@ -7,7 +7,7 @@ import org.springy.data.NodeData;
 import space.earlygrey.shapedrawer.ShapeDrawer;
 
 public class Node {
-  static final float RADIUS = 0.1f;
+  static final float RADIUS = 0.05f;
   static final float RADIUS_SQUARED = RADIUS * RADIUS;
 
   int id;
